@@ -1,0 +1,193 @@
+<a href='track_index.html'>NAZAJ</a>
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Simuliraj dirko</h1>
+<button id="simulirajDirko">Simuliraj</button><br><br>
+<button id="raceSimulation">Race simulation</button> 
+<!-- <button id="vrniVse">Vrni vse simulacije</button> -->
+<div id="res">
+</div>
+<pre id="output"></pre>
+<script>
+
+$("#raceSimulation").click(function(){
+    $.ajax({
+		method:"get",
+		url:"/race/simuliraj",
+	}).done(function (e){
+		//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+		$("#res").text(JSON.stringify(e));
+	});
+});
+
+$("#simulirajDirko").click(function(){
+    var drivers;
+    var vehicles;
+    var track;
+
+    var d = $.ajax({
+        method:"get",
+        url:"/driver",
+    }).done(function (e){
+        drivers = e;
+    });
+    var v = $.ajax({
+        method:"get",
+        url:"/vehicle",
+    }).done(function (e){
+        vehicles = e;
+    });
+    var t = $.ajax({
+        method:"get",
+        url:"/track",
+    }).done(function (e){
+        track = e;
+    });
+
+    $.when(d, v, t).then(function izracunaj(){
+        $("#res").text("");
+        $("#output").text("");
+        var casi = [];
+        //PROGA
+        //kot odseka - dlje časa
+        //elevation - počasneje, več bencina
+        //length - skalira čas
+        //vpliv materiala - wood manjši vpliv npr.
+        //powerup obstacle none ker je lahka proga
+        //VOZNIK
+        //upoštevamo samo overall (zračunan iz ostalih lastnosti v generatorju)
+        //VOZILO
+        //battery left - na začetku največ, skozi vsak odsek manj (manj je -> večji čas)
+        //acceleration in topSpeed skupaj upoštevaj da dobiš čas za prevoz odseka
+        //weight - večji weight manj točk - počasnejši
+        //engine horsepower - več točk
+
+        //overtking verjetnost - zamenjaj pozicijo z enim pred njim
+        for(j = 0; j < 8; j++){ //gre skozi odseke 
+            casi[j] = [];
+            for(i = 0; i < 5; i++){ //gre skozi igralce
+                var imeVoznika = drivers[i]['name'];
+                var ocenaVoznika;
+                var ocenaVozila;
+                var skupnaOcena;
+                var overall = drivers[i]['overall']; //overall voznika
+
+                var material = track[0]['sections'][j]['material'];
+                var elevation = track[0]['sections'][j]['elevation'];
+                var faktorMateriala; //večji kot je faktor materiala, dlje rabi voznik da prevozi odsek
+                if(material == "Stone"){
+                    faktorMateriala = 1.0; //najmanj spolzko
+                }
+                else if(material == "Wood"){
+                    faktorMateriala = 0.8; //srednje spolzko
+                }
+                else if(material == "Glass"){ 
+                    faktorMateriala = 0.6; //najbolj spolzko
+                }
+
+                //random - lahko se zgodi da pobere battery powerup -> + bencin
+                var moznostPowerupa;
+                var tezavnostProge = track[0]['difficulty']; //integer od 1 do 10
+                if (tezavnostProge <= 3) { //najlažja proga
+                    moznostPowerupa = 0.6;
+                }
+                if (tezavnostProge > 3 && tezavnostProge <= 6) { //srednjetežka proga
+                    moznostPowerupa = 0.3;
+                }
+                if (tezavnostProge > 6) { //težka proga
+                    moznostPowerupa = 0.1;
+                }
+                //VERJETNOST ZA POWERUP BATTERY
+                var batteryLeft = vehicles[i]['batteryLeft'];
+                if(Math.random() < moznostPowerupa){ //če bo random št. med 0 in 1 v območju moznostPowerup
+                    batteryLeft += 5; //bencin
+                }
+                batteryLeft -= elevation; //večji naklon odseka povzroči večjo porabo goriva
+
+                var pospesek = vehicles[i]['acceleration'];
+                var najvecjaHitrost = vehicles[i]['topSpeed'];
+                var teza = vehicles[i]['weight'];
+                var motorKonji = vehicles[i]['engine']['horsePower'];      
+                var dolzinaOdseka = track[0]['sections'][j]['length'];
+                var kot = track[0]['sections'][j]['angle'];
+                var faktorKota = kot / 90; //90 najvecji ovinek
+              
+                var overtaking = drivers[i]['overtaking'] / 100;
+
+               // var casVoznika = skupnaOcena / casOdseka;
+                var hitrostModifier = faktorMateriala * faktorKota *(pospesek/10  * motorKonji/100 * overall/100);
+                var casVoznika = dolzinaOdseka / (najvecjaHitrost * hitrostModifier);
+                console.log("Čas: " + imeVoznika + ": " + casVoznika);
+                console.log("Hitrost " + imeVoznika + ": " + (najvecjaHitrost * hitrostModifier));
+                casi[j][i] = casVoznika;
+                if(Math.random() > overtaking){ //je prehitel nekoga
+                    casi[j][i] -= (dolzinaOdseka/najvecjaHitrost)/2;
+                    console.log("Čas after: " + casi[j][i]);
+                }
+                console.log(" ");
+              //  $("#res").append(imeVoznika + "<br>");
+            }
+            var min = 99999999;
+            var min_idx = 0;
+            for(c=0; c < 5; c++){
+                if(casi[j][c] < min){
+                    min = casi[j][c];
+                    min_idx = c;
+                }
+            }
+            casi[j][5] = drivers[min_idx]["name"];
+
+            //$("#res").append("<br>");
+        }
+        // $("#res").append(JSON.stringify(casi) + "<br>");
+        var jsonDrivers = JSON.stringify(drivers, null, '\t');
+        var jsonVehicles = JSON.stringify(vehicles, null, '\t');
+        var jsonTrack =JSON.stringify(track, null, '\t');
+        var jsonCasi = JSON.stringify(casi, null, '\t');
+        // $("#output").append(jsonDrivers + "<br>");
+        // $("#output").append(jsonVehicles + "<br>");
+        // $("#output").append(jsonTrack + "<br>");
+        $("#output").append(jsonCasi + "<br>");
+
+        var casi_sum = [];
+        for(i = 0; i < 5; i++){
+            casi_sum[i] = 0;
+            for(j = 0; j < 8; j++){
+                casi_sum[i] += casi[j][i];
+            }
+            $("#res").append(drivers[i]["name"] + " " + casi_sum[i] + " - overall: " + drivers[i]["overall"] +"<br>");
+        }
+
+        let swap;
+        do {
+            swap = false;
+            for (let i = 1; i < casi_sum.length; ++i) {
+                if (casi_sum[i - 1] > casi_sum[i]) {
+                    [casi_sum[i], casi_sum[i - 1]] = [casi_sum[i - 1], casi_sum[i]];
+                    [drivers[i], drivers[i - 1]] = [drivers[i - 1], drivers[i]];
+                    swap = true;
+                }
+            }
+        } while (swap)
+
+         $("#res").append("<br>");
+        for(i = 0; i < 5; i++){
+            $("#res").append(drivers[i]["name"] + " " + casi_sum[i] + " - overall: " + drivers[i]["overall"] +"<br>");
+        }
+
+    });
+});	
+
+$("#vrniVse").click(function(){
+	//GET na /proga za vračanje vseh idjev prog
+	$.ajax({
+		method:"get",
+		url:"/race",
+	}).done(function (e){
+		//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+		$("#res").text(JSON.stringify(e));
+	});
+});
+</script>

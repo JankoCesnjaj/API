@@ -1,0 +1,191 @@
+<html>
+<!-- enostaven html vmesnik za testiranje node.js apija -->
+<head>
+	<a href='track_index.html'>Proga</a><br>
+	<a href='driver_index.html'>Voznik</a><br>
+	<a href='vehicle_index.html'>Vozilo</a>
+<style>
+div {
+border: 1px solid black;
+margin-bottom:20px;
+}
+div img {
+width:150px;
+display:block;
+}
+.json_voznik{
+	width: 250px;
+	height: 200px;
+}
+</style>
+
+<?php
+header("Access-Control-Allow-Origin: *"); 
+?>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Dodaj voznika:</h1>
+Ime:<input type="text" name="ime" id="ime"><br>
+Starost:<input type="number" name="starost" id="starost"><br>
+Spol:<input type="text" name="spol" id="spol"><br>
+Rank:<input type="number" name="rank" id="rank"><br>
+Drzava:<input type="text" name="drzava" id="drzava"><br>
+Stevilo zmag:<input type="number" name="number_of_wins" id="number_of_wins"><br>
+Speed:<input type="number" name="speed" id="speed"><br>
+Overtaking:<input type="number" name="overtaking" id="overtaking"><br>
+Blocking:<input type="number" name="blocking" id="blocking"><br>
+Bad Weather:<input type="number" name="bad_weather" id="bad_weather"><br>
+Reaction time:<input type="number" name="reaction_time" id="reaction_time"><br>
+Concentration:<input type="number" name="concentration" id="concentration"><br>
+Patience:<input type="number" name="patience" id="patience"><br>
+Intelligence:<input type="number" name="intelligence" id="intelligence"><br>
+Aggresiveness:<input type="number" name="aggresiveness" id="aggresiveness"><br>
+Will:<input type="number" name="number" id="will"><br>
+Fitness:<input type="number" name="fitness" id="fitness"><br>
+Injury:<input type="number" name="injury" id="injury"><br>
+Overall:<input type="number" name="overall" id="overall"><br>
+
+<button id="dodaj_voznika">Dodaj</button>
+<button id="vrni_vse_voznike">Vrni vse voznike</button>
+
+ID:<input type="text" name="id" id="id">
+<button id="izbrisi_voznika">Izbrisi voznika</button><br>
+<button id="posodobi_voznika">Posodobi voznika</button><br>
+
+JSON:<textarea name="json_voznik" id="json_voznik" class="json_voznik" cols="40" rows="5"></textarea>
+<button id="dodaj_voznika2">Dodaj voznika iz JSON</button>
+
+Iskanje:<input type="text" name="iskanje" id="iskanje">
+<button id="iskanje_button">Isci</button><br>
+<br>
+</div>
+<div id="res">
+</div>
+<script>
+
+
+$("#dodaj_voznika").click(function(){
+	//ustvarimo novo progo, pri čemer podatke o progi preberemo iz vnosnih polj
+	//odseke pa zgradimo kar v javascriptu
+	//POST na /proga za dodajanje nove proge
+	var data = {
+        ime: $("#ime").val(),
+        age: $("#starost").val(),
+        sex: $("#spol").val(),
+		rank: $("#rank").val(),
+		number_of_wins: $("#number_of_wins").val(),
+        drzava: $("#drzava").val(),
+        speed: $("#speed").val(),
+        overtaking: $("#overtaking").val(),
+        blocking: $("#blocking").val(),
+        bad_weather: $("#bad_weather").val(),
+        reaction_time: $("#reaction_time").val(),
+        concetration: $("#concentration").val(),
+        patience: $("#patience").val(),
+        aggresiveness: $("#aggresiveness").val(),
+        will: $("#will").val(),
+        intelligence: $("#intelligence").val(),
+        fitness: $("#fitness").val(),
+		injuries: $("#injuries").val(),
+		overall: $("#overall").val()
+	};
+	$.ajax({
+		method:"post",
+		url:"/driver",
+		data:data,
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});
+
+$("#posodobi_voznika").click(function(){
+	//ustvarimo novo progo, pri čemer podatke o progi preberemo iz vnosnih polj
+	//odseke pa zgradimo kar v javascriptu
+	//POST na /proga za dodajanje nove proge
+	var data = {
+        ime: $("#ime").val(),
+        age: $("#starost").val(),
+        sex: $("#spol").val(),
+		rank: $("#rank").val(),
+		number_of_wins: $("#number_of_wins").val(),
+        drzava: $("#drzava").val(),
+        speed: $("#speed").val(),
+        overtaking: $("#overtaking").val(),
+        blocking: $("#blocking").val(),
+        bad_weather: $("#bad_weather").val(),
+        reaction_time: $("#reaction_time").val(),
+        concetration: $("#concentration").val(),
+        patience: $("#patience").val(),
+        aggresiveness: $("#aggresiveness").val(),
+        will: $("#will").val(),
+        intelligence: $("#intelligence").val(),
+        fitness: $("#fitness").val(),
+		injuries: $("#injuries").val(),
+		overall: $("#overall").val()
+	};
+	
+	$.ajax({
+		method:"put",
+		url:"/driver/"+$("#id").val(),
+		data:data,
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+
+$("#vrni_vse_voznike").click(function(){
+	//ustvarimo novo progo, pri čemer podatke o progi preberemo iz vnosnih polj
+	//odseke pa zgradimo kar v javascriptu
+	//POST na /proga za dodajanje nove proge
+	$.ajax({
+		method:"get",
+		url:"/driver",
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+
+
+$("#iskanje_button").click(function(){
+	//ustvarimo novo progo, pri čemer podatke o progi preberemo iz vnosnih polj
+	//odseke pa zgradimo kar v javascriptu
+	//POST na /proga za dodajanje nove proge
+	$.ajax({
+		method:"get",
+		url: "/driver/"+ $("#iskanje").val(),
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+
+$("#izbrisi_voznika").click(function(){
+	//ustvarimo novo progo, pri čemer podatke o progi preberemo iz vnosnih polj
+	//odseke pa zgradimo kar v javascriptu
+	//POST na /proga za dodajanje nove proge
+	$.ajax({
+		method:"delete",
+		url:"/driver/"+$("#id").val(),
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+$("#dodaj_voznika2").click(function(){
+//	$("#res").append($("#json_voznik").val());
+	var json = JSON.parse($("#json_voznik").val());
+	$("#res").text(JSON.stringify(json));
+	
+	$.ajax({
+		method:"post",
+		url:"/driver",
+		data: json,
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+
+
+</script>
+</body>
+</html>

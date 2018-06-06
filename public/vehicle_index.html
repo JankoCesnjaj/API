@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <title>track_index</title>
+  <a href='track_index.html'>Proga</a><br>
+  <a href='driver_index.html'>Voznik</a><br>
+  <a href='vehicle_index.html'>Vozilo</a>
+</head>
+
+<body>
+	<div>
+		<h1>Dodaj vozilo</h1>
+		Manufacturer: <input type="text" name="manufacturer" id="manufacturer" required = "required"><br>
+		Color: <input type="text" name="color" id="color" required = "required"><br>
+		Drive wheel: <input type="text" name="driveWheel" id="driveWheel" required = "required"><br>
+		Charge time: <input type="text" name="chargeTime" id="chargeTime" required = "required"><br>
+		Battery left: <input type="text" name="batteryLeft" id="batteryLeft" required = "required"><br>
+		Acceleration: <input type="text" name="acceleration" id="acceleration" required = "required"><br>
+		Top speed: <input type="text" name="topSpeed" id="topSpeed" required = "required"><br>
+		Weight: <input type="text" name="weight" id="weight" required = "required"><br>
+		Battery Consumption: <input type="text" name="batteryConsumption" id="batteryConsumption" required = "required"><br>
+		Horsepower: <input type="text" name="horsePower" id="horsePower" required = "required"><br>
+		<button id="dodaj">Dodaj</button>
+	</div>
+	<br>
+	<div>
+		<h1>Pridobi vozila znamke</h1>
+		Manufacturer: <input type="text" name="getmanufacturer" id="getmanufacturer" required = "required"><br>
+		<button id="pridobi">Pridobi</button>
+	</div>
+	<br>
+	<!-- <div>
+		<h1>Pridobi vozila težja od</h1>
+		Weight: <input type="text" name="tezje" id="tezje" required = "required"><br>
+		<button id="pridobiTezje">Pridobi</button>
+	</div>
+	<br>
+	<div>
+		<h1>Pridobi vozila lažja od</h1>
+		Weight: <input type="text" name="lazje" id="lazje" required = "required"><br>
+		<button id="pridobiLazje">Pridobi</button>
+	</div>
+	<br>	
+	<div>
+		<h1>Pridobi vozila po pogonu</h1>
+		Weight: <input type="text" name="pogon" id="pogon" required = "required"><br>
+		<button id="pridobiPogon">Pridobi</button>
+	</div> -->
+	<br>
+		<h1>Izbriši vozilo po id</h1>
+		ID: <input type="text" name="idd" id="idd" required = "required"><br>
+		<button id="izbrisi">Izbriši</button>
+	</div>
+	<br>
+	<div id="res"></div>
+	<script>
+		$("#izbrisi").click(function(){
+
+			$.ajax({
+
+				method: "delete",
+				url: "/vehicle/" + $("#idd").val(),
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+		});
+		$("#pridobi").click(function(){
+			$.ajax({
+				method: "get",
+				url: "/vehicle/manufacturer/" + $("#getmanufacturer").val(),
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+		});
+		$("#pridobiTezje").click(function(){
+			$.ajax({
+				method: "get",
+				url: "vehicle/weight/tezje/" + $("#tezje").val(),
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+		});
+		$("#pridobiLazje").click(function(){
+			$.ajax({
+				method: "get",
+				url: "vehicle/weight/lazje/" + $("#lazje").val(),
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+		});
+		$("#dodaj").click(function(){	
+			var data = {
+				manufacturer: $("#manufacturer").val(),
+		        color: $("#color").val(),
+		        driveWheel: $("#driveWheel").val(),
+				chargeTime: $("#chargeTime").val(),
+				batteryLeft: $("#batteryLeft").val(),
+		        acceleration: $("#acceleration").val(),
+		        topSpeed: $("#topSpeed").val(),
+		        weight: $("#weight").val(),
+		        engine: {
+					batteryConsumption: $("#batteryConsumption").val(),
+					horsePower: $("#horsePower").val()
+				}
+			};
+
+			$.ajax({
+				method: "post",
+				url: "/vehicle",
+				data: data,
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+
+		});
+		$("#pridobiPogon").click(function(){
+			$.ajax({
+				method: "get",
+				url: "/vehicle/pogon/" + $("#pogon").val(),
+			}).done(function(e){
+				$("#res").text(JSON.stringify(e));
+			});
+		});
+	</script>
+
+</body>
+</html>

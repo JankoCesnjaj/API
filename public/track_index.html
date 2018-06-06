@@ -1,0 +1,225 @@
+<html>
+<!-- enostaven html vmesnik za testiranje node.js apija -->
+<head>
+<a href='track_index.html'>Proga</a><br>
+<a href='driver_index.html'>Voznik</a><br>
+<a href='vehicle_index.html'>Vozilo</a><br>
+<a href='race_simulation.html'>SIMULACIJA DIRKE</a>
+<style>
+div {
+border: 1px solid black;
+margin-bottom:20px;
+}
+div img {
+width:150px;
+display:block;
+
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Dodaj Progo:</h1>
+Id(optional): <input type="text" name="id" id="id"><br>
+Location: <input type="text" name="lokacija" id="lokacija"><br>
+Description: <input type="text" name="opis" id="opis"><br>
+Difficulty: <input type="text" name="tezavnost" id="tezavnost"><br>
+Length: <input type="text" name="dolzina" id="dolzina"><br>
+Laps: <input type="text" name="krogi" id="krogi"><br><br>
+<button id="dodajProgo">Dodaj</button><br><br>
+Vrni eno: <input type="text" name="tbVrniProgo" id="tbVrniProgo">
+<button id="vrniProgo">Vrni eno</button><br><br>
+Iskanje: <input type="text" name="tbIskanje" id="tbIskanje">
+<button id="isciProgo">Isci</button><br><br>
+<button id="vrniVse">Vrni vse</button><br>
+</div><br>
+JSON:<br><textarea name="jsonProga" id="jsonProga" class="jsonProga" cols="40" rows="5"></textarea><br>
+<button id="dodajJSON">Dodaj progo iz JSON</button><br>
+<div id="res">
+</div>
+<script>
+
+$("#dodajJSON").click(function(){
+	var json = JSON.parse($("#jsonProga").val());
+	$("#res").text(JSON.stringify(json));
+	
+	$.ajax({
+		method:"post",
+		url:"/track",
+		data: json,
+		}).done(function (e){
+			$("#res").text(JSON.stringify(e));
+		});
+});	
+
+$("#dodajProgo").click(function(){
+	var data={
+	location: $("#lokacija").val(),
+	description:  $("#opis").val(),
+	difficulty:  $("#tezavnost").val(),
+	length:  $("#dolzina").val(),
+	laps:  $("#krogi").val(),
+	sections: [
+		{
+		direction: 'Straight',
+		angle: 180,
+		elevation: 0,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Straight',
+		angle: 180,
+		elevation: 5,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Left',
+		angle: 90,
+		elevation: 5,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Left',
+		angle: 90,
+		elevation: 10,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Straight',
+		angle: 180,
+		elevation: 15,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Straight',
+		angle: 180,
+		elevation: 10,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Left',
+		angle: 90,
+		elevation: 5,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		},
+		{
+		direction: 'Left',
+		angle: 90,
+		elevation: 0,
+		length: 500,
+		material: 'Wood',
+		powerup: 'None',
+		obstacle: 'None'
+		}]
+	};
+	
+	//POST na /proga za dodajanje nove proge
+	$.ajax({
+		method:"post",
+		url:"/track",
+		data:data,
+	}).done(function (e){
+		//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+		$("#res").text(JSON.stringify(e));
+	});
+});	
+
+$("#vrniVse").click(function(){
+	//GET na /proga za vračanje vseh idjev prog
+	$.ajax({
+		method:"get",
+		url:"/track",
+	}).done(function (e){
+		//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+		$("#res").text(JSON.stringify(e));
+	});
+});
+
+$("#vrniProgo").click(function(){
+	var id=$("#tbVrniProgo").val();
+	$.ajax({
+		method:"get",
+		url:"/track/"+id,
+	}).done(function (e){
+		//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+		$("#res").text(JSON.stringify(e));
+	});
+});
+
+$("#isciProgo").click(function(){
+	var niz=$("#tbIskanje").val();
+	var st = niz.substr(niz.length - 1); //manjse od, vecje od
+	//ime,lokacija,opis
+	var i = niz.includes("ime");
+	var l = niz.includes("lokacija");
+	var o = niz.includes("opis");
+	var d = niz.includes("daljse od");
+	var k = niz.includes("krajse od");
+	if(d == true){
+		$.ajax({
+		method:"get",
+		url:"/track/dolzina/daljse/" + st,
+		}).done(function (e){
+			alert("Done");
+			//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+			$("#res").text(JSON.stringify(e));
+		});
+	}
+	if(k == true){
+		$.ajax({
+		method:"get",
+		url:"/track/dolzina/krajse/" + st,
+		}).done(function (e){
+			//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+			$("#res").text(JSON.stringify(e));
+		});
+	}
+	else if(i == true || l == true || o == true){
+		var arg;
+		if(i == true){
+			arg = "ime";
+			niz = niz.substr(4,niz.length);
+		}
+		if(l == true){
+			arg = "lokacija";
+			niz = niz.substr(9,niz.length);
+		}
+		if(o == true){
+			arg = "opis";
+			niz = niz.substr(5,niz.length);
+		}
+		$.ajax({
+		method:"get",
+		url:"/track/"+arg+"/"+niz,
+		}).done(function (e){
+			//vrednost, ki jo dobimo nazaj samo prilepimo v div #res
+			$("#res").text(JSON.stringify(e));
+		});
+	}
+});
+
+</script>
+</body>
+</html>
+
